@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BillingController;
+use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +22,14 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:admin'])->get('/admin', function () {
     return view('admin.dashboard');
 });
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
+    Route::post('/billing/checkout/{price}', [BillingController::class, 'checkout'])->name('billing.checkout');
+    Route::get('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+});
+
+Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])->name('stripe.webhook');
 
 
 require __DIR__.'/auth.php';
