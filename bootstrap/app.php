@@ -11,17 +11,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
         ]);
 
-        // CSRF: allow Stripe webhooks
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
         ]);
     })
+    ->withProviders([
+        \App\Providers\TenancyServiceProvider::class, // <-- add this
+    ])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })

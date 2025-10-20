@@ -12,13 +12,17 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::updateOrCreate(
-            ['email' => 'admin@credify.localhost'],
-            [
-                'name' => 'Admin',
-                'password' => bcrypt('password'),
-                'role' => 'admin',
-            ]
-        );
+        if (tenant()) {
+            $this->call(AdminUserSeeder::class);
+        } else {
+            \App\Models\User::updateOrCreate(
+                ['email' => 'admin@credify.localhost'],
+                [
+                    'name' => 'Admin',
+                    'password' => bcrypt('password'),
+                    'role' => 'admin',
+                ]
+            );
+        }
     }
 }
