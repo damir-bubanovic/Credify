@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -112,6 +112,22 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
+
+        'tenant' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', 'mysql'),
+            'port' => env('DB_PORT', 3306),
+            'database' => null, // Tenancy sets this at runtime
+            'username' => env('DB_USERNAME', 'sail'),
+            'password' => env('DB_PASSWORD', 'password'),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
 
     ],
 

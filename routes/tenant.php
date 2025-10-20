@@ -1,33 +1,27 @@
 <?php
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Tenant\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
-|--------------------------------------------------------------------------
-| Tenant Routes
-|--------------------------------------------------------------------------
-| These routes run under the tenant context using domain identification.
-| Public routes (e.g., whoami, register, login) are outside auth middleware.
-| Campaign routes require auth + verified + subscribed.
-|--------------------------------------------------------------------------
+| Tenant routes
+| Public (auth pages, whoami) + Protected (app)
 */
 
-// Public tenant routes (no auth)
+# Public tenant routes (no auth)
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     Route::get('/whoami', fn () => tenant('id') ?? 'no-tenant');
-
-    // Enable authentication pages for tenant users
-    require base_path('routes/auth.php');
+    require base_path('routes/auth.php'); // tenant login/register/password routes
 });
 
-// Protected tenant routes (require login)
+# Protected tenant routes
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -36,6 +30,10 @@ Route::middleware([
     'verified',
     'subscribed',
 ])->group(function () {
+    // dashboard name MUST be "dashboard" for auth redirects
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    // campaigns
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('tenant.campaigns.index');
     Route::get('/campaigns/create', [CampaignController::class, 'create'])->name('tenant.campaigns.create');
     Route::post('/campaigns', [CampaignController::class, 'store'])->name('tenant.campaigns.store');

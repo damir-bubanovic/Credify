@@ -1,0 +1,12 @@
+sail artisan migrate:fresh --seed
+sail artisan tenant:recreate acme acme.credify.localhost
+
+
+ADMIN
+URL: http://credify.localhost/login
+Email: admin@credify.localhost
+Password: password
+
+TENANT
+http://acme.credify.localhost/register
+
