@@ -10,3 +10,5 @@ Password: password
 TENANT
 http://acme.credify.localhost/register
 
+
+moraš mu reč da artisan ili seed da napravi basic tenant i da mi credentials

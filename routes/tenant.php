@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Tenant\BillingController as TB;
 use App\Http\Controllers\Tenant\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -8,7 +9,7 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
 | Tenant routes
-| Public (auth pages, whoami) + Protected (app)
+| Public (auth, whoami, billing) + Protected (app)
 */
 
 # Public tenant routes (no auth)
@@ -18,7 +19,15 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     Route::get('/whoami', fn () => tenant('id') ?? 'no-tenant');
-    require base_path('routes/auth.php'); // tenant login/register/password routes
+
+    // Billing (checkout/portal can be hit pre-login)
+    Route::get('/billing', [TB::class, 'show'])->name('tenant.billing.show');
+    Route::get('/billing/success', [TB::class, 'success'])->name('tenant.billing.success');
+    Route::post('/billing/checkout/{price}', [TB::class, 'checkout'])->name('tenant.billing.checkout');
+    Route::get('/billing/portal', [TB::class, 'portal'])->name('tenant.billing.portal');
+
+    // Tenant auth routes
+    require base_path('routes/auth.php');
 });
 
 # Protected tenant routes
