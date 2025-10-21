@@ -1,5 +1,6 @@
+sail artisan optimize:clear
 sail artisan migrate:fresh --seed
-sail artisan tenant:recreate acme acme.credify.localhost
+
 
 
 ADMIN

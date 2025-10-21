@@ -3,6 +3,7 @@
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\Tenant\BillingController as TB;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\CreditController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -50,4 +51,8 @@ Route::middleware([
     Route::get('/campaigns/{campaign}/edit', [CampaignController::class, 'edit'])->name('tenant.campaigns.edit');
     Route::put('/campaigns/{campaign}', [CampaignController::class, 'update'])->name('tenant.campaigns.update');
     Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('tenant.campaigns.destroy');
+
+    // credits
+    Route::get('/credits', [CreditController::class, 'index'])->name('tenant.credits.index');
+    Route::post('/credits/settings', [CreditController::class, 'updateSettings'])->name('tenant.credits.settings');
 });
