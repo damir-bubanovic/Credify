@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class BillingController extends Controller
 {
@@ -20,7 +19,7 @@ class BillingController extends Controller
         });
 
         return view('tenant.billing.show', [
-            'state' => $state,
+            'state'      => $state,
             'priceBasic' => env('PRICE_BASIC'),
             'pricePro'   => env('PRICE_PRO'),
         ]);
@@ -28,19 +27,20 @@ class BillingController extends Controller
 
     public function checkout(string $price)
     {
-        $tenantId = tenant('id');
+        $tenantId   = tenant('id');
+        // Build absolute tenant URLs *before* switching to central
+        $successUrl = route('tenant.billing.success');
+        $cancelUrl  = route('tenant.billing.show');
 
-        $url = tenancy()->central(function () use ($tenantId, $price) {
+        $url = tenancy()->central(function () use ($tenantId, $price, $successUrl, $cancelUrl) {
             $t = \App\Models\Tenant::findOrFail($tenantId);
-
-            // ensure Stripe customer exists
             if (! $t->hasStripeId()) $t->createOrGetStripeCustomer();
 
             return $t->newSubscription('default', [$price])
                 ->allowPromotionCodes()
                 ->checkout([
-                    'success_url' => route('tenant.billing.success'),
-                    'cancel_url'  => route('tenant.billing.show'),
+                    'success_url' => $successUrl,
+                    'cancel_url'  => $cancelUrl,
                 ])->url;
         });
 
@@ -49,17 +49,19 @@ class BillingController extends Controller
 
     public function success()
     {
-        return redirect()->route('tenant.dashboard')->with('status', 'Subscription active.');
+        // Correct route name is 'dashboard'
+        return redirect()->route('dashboard')->with('status', 'Subscription active.');
     }
 
     public function portal()
     {
-        $tenantId = tenant('id');
+        $tenantId  = tenant('id');
+        $returnUrl = route('tenant.billing.show'); // build in tenant context
 
-        $url = tenancy()->central(function () use ($tenantId) {
+        $url = tenancy()->central(function () use ($tenantId, $returnUrl) {
             $t = \App\Models\Tenant::findOrFail($tenantId);
             if (! $t->hasStripeId()) $t->createOrGetStripeCustomer();
-            return $t->redirectToBillingPortal(route('tenant.billing.show'))->getTargetUrl();
+            return $t->redirectToBillingPortal($returnUrl)->getTargetUrl();
         });
 
         return redirect()->away($url);
