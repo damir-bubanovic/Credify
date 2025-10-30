@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->index();     // billable is Tenant
-            $table->string('name');                      // e.g. 'default'
+            // Cashier expects 'user_id' column pointing to the billable model key.
+            // Tenant ids are strings => make this a string.
+            $table->string('user_id')->index();
+
+            $table->string('name');                   // e.g. 'default'
             $table->string('stripe_id')->index();
             $table->string('stripe_status');
             $table->string('stripe_price')->nullable();
@@ -23,7 +26,7 @@ return new class extends Migration
             $table->timestamp('ends_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['tenant_id', 'name']);
+            $table->unique(['user_id','name']);  
         });
     }
 
