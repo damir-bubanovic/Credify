@@ -38,7 +38,7 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     'auth',
     'verified',
-    'subscribed',
+    'tenant.subscribed', // tenant-level subscription check
 ])->group(function () {
     // dashboard name MUST be "dashboard" for auth redirects
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -56,3 +56,4 @@ Route::middleware([
     Route::get('/credits', [CreditController::class, 'index'])->name('tenant.credits.index');
     Route::post('/credits/settings', [CreditController::class, 'updateSettings'])->name('tenant.credits.settings');
 });
+
