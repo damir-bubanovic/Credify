@@ -3,7 +3,7 @@
     <h1 class="text-xl font-semibold">Credits</h1>
     <div class="mt-2">Balance: <strong>{{ $balance->balance }}</strong></div>
 
-    <form class="mt-4" method="post" action="{{ route('credits.settings') }}">
+    <form class="mt-4" method="post" action="{{ route('tenant.credits.settings') }}">
         @csrf
         <label>Low threshold <input name="low_threshold" type="number" value="{{ $balance->low_threshold }}"></label>
         <label>Auto top-up <input name="auto_topup_enabled" type="checkbox" value="1" @checked($balance->auto_topup_enabled)></label>

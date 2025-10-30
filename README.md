@@ -46,14 +46,15 @@
 - Cashier configured to use `Tenant` model.
 - Subscription and credit tracking tables functional.
 
----
-
-## 🚧 Chapters / Features Still To Be Done
-
 ### 8. **Tenant Credit System Automation**
 - Implement automatic credit deduction per campaign or API usage.
 - Add credit transaction history per tenant.
 - Low-credit alerts and auto top-up functionality.
+
+---
+
+## 🚧 Chapters / Features Still To Be Done
+
 
 ### 9. **Advanced Admin Management**
 - Central admin dashboard to list tenants, domains, and billing status.

@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreditBalance extends Model
 {
-    protected $fillable = [
-        'tenant_id','balance','low_threshold',
-        'auto_topup_enabled','topup_amount','stripe_price_id'
-    ];
+    protected $connection = 'mysql';              // central
+    protected $table = 'credit_balances';
+
+    protected $fillable = ['tenant_id','balance','low_threshold'];
+    protected $casts = ['balance'=>'int','low_threshold'=>'int'];
 }

@@ -3,44 +3,84 @@
 namespace App\Services;
 
 use App\Models\Tenant;
+use App\Models\CreditBalance;
+use App\Models\CreditLedger;
 use Illuminate\Support\Facades\DB;
 
 class CreditService
 {
-    public function add(Tenant $tenant, int $amount, string $reason = null, array $meta = []): void
+    public function balance(Tenant $tenant): int
     {
-        DB::transaction(function () use ($tenant, $amount, $reason, $meta) {
-            DB::table('credit_transactions')->insert([
-                'tenant_id' => $tenant->id,
-                'type' => 'earn',
-                'amount' => $amount,
-                'reason' => $reason,
-                'meta' => json_encode($meta),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $tenant->increment('credit_balance', $amount);
+        return tenancy()->central(function () use ($tenant) {
+            $row = CreditBalance::firstOrCreate(
+                ['tenant_id' => (string) $tenant->getKey()],
+                [
+                    'balance'       => (int) config('credits.starting_balance', 100),
+                    'low_threshold' => (int) config('credits.low_threshold', 10),
+                ]
+            );
+
+            return (int) $row->balance;
         });
     }
 
-    public function spend(Tenant $tenant, int $amount, string $reason = null, array $meta = []): bool
+    public function add(Tenant $tenant, int $amount, ?string $reason = null, array $meta = []): void
     {
-        return DB::transaction(function () use ($tenant, $amount, $reason, $meta) {
-            $tenant->refresh();
-            if ($tenant->credit_balance < $amount) {
-                return false;
-            }
-            DB::table('credit_transactions')->insert([
-                'tenant_id' => $tenant->id,
-                'type' => 'spend',
-                'amount' => $amount,
-                'reason' => $reason,
-                'meta' => json_encode($meta),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $tenant->decrement('credit_balance', $amount);
-            return true;
+        tenancy()->central(function () use ($tenant, $amount, $reason, $meta) {
+            DB::connection('mysql')->transaction(function () use ($tenant, $amount, $reason, $meta) {
+                $tid = (string) $tenant->getKey();
+
+                $bal = CreditBalance::lockForUpdate()->firstOrCreate(
+                    ['tenant_id' => $tid],
+                    [
+                        'balance'       => 0,
+                        'low_threshold' => (int) config('credits.low_threshold', 10),
+                    ]
+                );
+
+                $bal->balance += $amount;
+                $bal->save();
+
+                CreditLedger::create([
+                    'tenant_id' => $tid,
+                    'delta'     => $amount,
+                    'reason'    => $reason,
+                    'meta'      => $meta,
+                ]);
+            });
+        });
+    }
+
+    public function spend(Tenant $tenant, int $amount, ?string $reason = null, array $meta = []): bool
+    {
+        return tenancy()->central(function () use ($tenant, $amount, $reason, $meta) {
+            return DB::connection('mysql')->transaction(function () use ($tenant, $amount, $reason, $meta) {
+                $tid = (string) $tenant->getKey();
+
+                $bal = CreditBalance::lockForUpdate()->firstOrCreate(
+                    ['tenant_id' => $tid],
+                    [
+                        'balance'       => 0,
+                        'low_threshold' => (int) config('credits.low_threshold', 10),
+                    ]
+                );
+
+                if ($bal->balance < $amount) {
+                    return false;
+                }
+
+                $bal->balance -= $amount;
+                $bal->save();
+
+                CreditLedger::create([
+                    'tenant_id' => $tid,
+                    'delta'     => -$amount,
+                    'reason'    => $reason,
+                    'meta'      => $meta,
+                ]);
+
+                return true;
+            });
         });
     }
 }

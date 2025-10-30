@@ -3,18 +3,32 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Carbon;
 
 class BillingController extends Controller
 {
+
     public function show()
     {
         $tenantId = tenant('id');
 
         $state = tenancy()->central(function () use ($tenantId) {
-            $t = \App\Models\Tenant::find($tenantId);
+            $subscribed = \DB::table('subscriptions')
+                ->where('user_id', (string) $tenantId)
+                ->where('name', 'default')
+                ->whereIn('stripe_status', ['active', 'trialing', 'past_due'])
+                ->whereNull('ends_at')
+                ->exists();
+
+            $plan = \DB::table('subscriptions')
+                ->where('user_id', (string) $tenantId)
+                ->where('name', 'default')
+                ->orderByDesc('created_at')
+                ->value('stripe_price');
+
             return [
-                'subscribed' => $t?->subscribed('default') ?? false,
-                'plan' => $t?->plan,
+                'subscribed' => $subscribed,
+                'plan'       => $plan,
             ];
         });
 
@@ -25,11 +39,12 @@ class BillingController extends Controller
         ]);
     }
 
+
+
     public function checkout(string $price)
     {
         $tenantId   = tenant('id');
-        // Build absolute tenant URLs *before* switching to central
-        $successUrl = route('tenant.billing.success');
+        $successUrl = route('tenant.billing.success') . '?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl  = route('tenant.billing.show');
 
         $url = tenancy()->central(function () use ($tenantId, $price, $successUrl, $cancelUrl) {
@@ -48,8 +63,52 @@ class BillingController extends Controller
     }
 
     public function success()
-    {
-        // Correct route name is 'dashboard'
+    {        
+        $tenantId   = tenant('id');
+        $sessionId  = request('session_id');
+
+        if (! $sessionId) {
+            return redirect()->route('tenant.billing.show')
+                ->with('status', 'Missing session id. If you already paid, refresh.');
+        }
+
+        tenancy()->central(function () use ($tenantId, $sessionId) {
+            \Stripe\Stripe::setApiKey(config('cashier.secret'));
+
+            $session     = \Stripe\Checkout\Session::retrieve($sessionId);
+            $subscriptionId = $session->subscription ?? null;
+            if (! $subscriptionId) {
+                return;
+            }
+
+            $stripeSub = \Stripe\Subscription::retrieve($subscriptionId);
+            $item      = $stripeSub->items->data[0] ?? null;
+            $priceId   = $item?->price?->id;
+            $qty       = $item?->quantity ?? 1;
+            $status    = $stripeSub->status; // e.g. active, trialing, past_due...
+            $trialEnd  = $stripeSub->trial_end ? Carbon::createFromTimestamp($stripeSub->trial_end) : null;
+
+            /** @var \App\Models\Tenant $t */
+            $t = \App\Models\Tenant::findOrFail($tenantId);
+
+            // Subscriptions table uses user_id (string) for the billable key.
+            // Upsert on stripe_id; set name='default' to match your gate.
+            \DB::table('subscriptions')->updateOrInsert(
+                ['user_id' => (string) $t->getKey(), 'name' => 'default'], // conflict key
+                [
+                    'stripe_id'     => $subscriptionId,
+                    'stripe_status' => $status,
+                    'stripe_price'  => $priceId,
+                    'quantity'      => $qty,
+                    'trial_ends_at' => $trialEnd,
+                    'ends_at'       => null,
+                    'updated_at'    => now(),
+                    'created_at'    => now(),
+                ]
+            );
+        });
+
+        // now the tenant should pass the gate
         return redirect()->route('dashboard')->with('status', 'Subscription active.');
     }
 
