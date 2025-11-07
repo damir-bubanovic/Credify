@@ -51,15 +51,15 @@
 - Add credit transaction history per tenant.
 - Low-credit alerts and auto top-up functionality.
 
----
-
-## 🚧 Chapters / Features Still To Be Done
-
-
 ### 9. **Advanced Admin Management**
 - Central admin dashboard to list tenants, domains, and billing status.
 - Admin ability to suspend or delete tenants.
 - Metrics and analytics dashboard.
+
+---
+
+## 🚧 Chapters / Features Still To Be Done
+
 
 ### 10. **Email & Notifications**
 - Tenant-specific email branding.
