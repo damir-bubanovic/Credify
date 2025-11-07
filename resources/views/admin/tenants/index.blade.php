@@ -1,7 +1,13 @@
-<x-layout>
-    <h1 class="text-2xl font-semibold mb-4">Tenants</h1>
+<x-app-layout>
+    <h1 class="mb-2">Tenants</h1>
 
-    <form class="mb-4 flex gap-2">
+    @if(session('status'))
+        <div style="padding:.5rem 1rem;border:1px solid #cbd5e1;background:#f1f5f9;margin-bottom:1rem;">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <form class="mb-4 flex gap-2" method="GET">
         <select name="status" class="border p-2">
             <option value="">All</option>
             <option value="active" @selected(request('status')==='active')>Active</option>
@@ -10,53 +16,85 @@
         <label class="flex items-center gap-2">
             <input type="checkbox" name="only_trashed" value="1" @checked(request('only_trashed'))> Deleted
         </label>
-        <button class="border px-3 py-2 rounded">Filter</button>
+        <button type="submit" class="border px-3 py-2 rounded">Filter</button>
     </form>
 
-    <table class="w-full border text-sm">
-        <thead>
-            <tr>
-                <th class="p-2 border">ID</th>
-                <th class="p-2 border">Domain</th>
-                <th class="p-2 border">Status</th>
-                <th class="p-2 border">Created</th>
-                <th class="p-2 border">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach($tenants as $t)
-            <tr>
-                <td class="p-2 border">{{ $t->id }}</td>
-                <td class="p-2 border">{{ optional($t->domains->first())->domain }}</td>
-                <td class="p-2 border">{{ $t->status ?? 'active' }}</td>
-                <td class="p-2 border">{{ $t->created_at }}</td>
-                <td class="p-2 border space-x-2">
-                    <a href="{{ route('admin.tenants.show',$t) }}" class="text-blue-600">View</a>
+    <div style="overflow:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="padding:.5rem;border-bottom:1px solid #e5e7eb;text-align:left;">ID</th>
+                    <th style="padding:.5rem;border-bottom:1px solid #e5e7eb;text-align:left;">Domain</th>
+                    <th style="padding:.5rem;border-bottom:1px solid #e5e7eb;text-align:left;">Status</th>
+                    <th style="padding:.5rem;border-bottom:1px solid #e5e7eb;text-align:left;">Created</th>
+                    <th style="padding:.5rem;border-bottom:1px solid #e5e7eb;text-align:left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @forelse($tenants as $t)
+                @php
+                    $domain = optional($t->domains->first())->domain;
+                    $status = $t->status ?? 'active';
+                @endphp
+                <tr>
+                    <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
+                        <a href="{{ route('admin.tenants.show', $t) }}" style="color:#2563eb;text-decoration:none;">
+                            {{ $t->id }}
+                        </a>
+                    </td>
+                    <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
+                        {{ $domain ?: '—' }}
+                    </td>
+                    <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
+                        {{ $status }}
+                    </td>
+                    <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
+                        {{ $t->created_at }}
+                    </td>
+                    <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;white-space:nowrap;">
+                        <a href="{{ route('admin.tenants.show', $t) }}" style="margin-right:.5rem;color:#2563eb;">View</a>
 
-                    @if($t->trashed())
-                        <form method="POST" action="{{ route('admin.tenants.restore',$t->id) }}" class="inline">@csrf @method('PATCH')
-                            <button class="text-green-700">Restore</button>
-                        </form>
-                    @else
-                        @if(($t->status ?? 'active')==='active')
-                            <form method="POST" action="{{ route('admin.tenants.suspend',$t) }}" class="inline">@csrf @method('PATCH')
-                                <button class="text-yellow-700">Suspend</button>
+                        @if(method_exists($t, 'trashed') && $t->trashed())
+                            <form method="POST" action="{{ route('admin.tenants.restore', $t->id) }}" style="display:inline;">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" style="margin-right:.5rem;color:#16a34a;">Restore</button>
                             </form>
                         @else
-                            <form method="POST" action="{{ route('admin.tenants.activate',$t) }}" class="inline">@csrf @method('PATCH')
-                                <button class="text-green-700">Activate</button>
+                            @if($status === 'active')
+                                <form method="POST" action="{{ route('admin.tenants.suspend', $t) }}" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" style="margin-right:.5rem;color:#ca8a04;">Suspend</button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('admin.tenants.activate', $t) }}" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" style="margin-right:.5rem;color:#16a34a;">Activate</button>
+                                </form>
+                            @endif
+
+                            <form method="POST" action="{{ route('admin.tenants.destroy', $t) }}" style="display:inline;" onsubmit="return confirm('Delete tenant?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" style="color:#b91c1c;">Delete</button>
                             </form>
                         @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" style="padding:.75rem;text-align:center;color:#6b7280;">
+                        No tenants found.
+                    </td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
 
-                        <form method="POST" action="{{ route('admin.tenants.destroy',$t) }}" class="inline" onsubmit="return confirm('Delete tenant?')">@csrf @method('DELETE')
-                            <button class="text-red-700">Delete</button>
-                        </form>
-                    @endif
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-
-    <div class="mt-4">{{ $tenants->links() }}</div>
-</x-layout>
+    <div style="margin-top:1rem;">
+        {{ $tenants->links() }}
+    </div>
+</x-app-layout>
