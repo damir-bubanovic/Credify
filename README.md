@@ -47,14 +47,14 @@
 - Subscription and credit tracking tables functional.
 
 ### 8. **Tenant Credit System Automation**
-- Implement automatic credit deduction per campaign or API usage.
-- Add credit transaction history per tenant.
+- Implemented automatic credit deduction per campaign or API usage.
+- Added credit transaction history per tenant.
 - Low-credit alerts and auto top-up functionality.
 
 ### 9. **Advanced Admin Management**
-- Central admin dashboard to list tenants, domains, and billing status.
-- Admin ability to suspend or delete tenants.
-- Metrics and analytics dashboard.
+- Central admin dashboard to list tenants, domains, and billing status created.
+- Admin ability to suspend or delete tenants added.
+- Metrics and analytics dashboard created.
 
 ---
 
