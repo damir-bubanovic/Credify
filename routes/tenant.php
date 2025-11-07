@@ -10,10 +10,10 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
 | Tenant routes
-| Public (auth, whoami, billing) + Protected (app)
+| Public (whoami, billing) + Protected (app)
 */
 
-# Public tenant routes (no auth)
+# Public tenant routes (no auth required)
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -27,11 +27,17 @@ Route::middleware([
     Route::post('/billing/checkout/{price}', [TB::class, 'checkout'])->name('tenant.billing.checkout');
     Route::get('/billing/portal', [TB::class, 'portal'])->name('tenant.billing.portal');
 
-    // Tenant auth routes
-    require base_path('routes/auth.php');
+    // IMPORTANT:
+    // Do NOT include central auth routes here.
+    // They define /login, /register, etc. and would override central /login
+    // and then PreventAccessFromCentralDomains would 404 on credify.localhost.
+    //
+    // So this stays commented:
+    //
+    // require base_path('routes/auth.php');
 });
 
-# Protected tenant routes
+# Protected tenant routes (require tenant tenancy + auth)
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -40,8 +46,9 @@ Route::middleware([
     'verified',
     'tenant.subscribed', // tenant-level subscription check
 ])->group(function () {
-    // dashboard name MUST be "dashboard" for auth redirects
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    // Use a distinct route NAME to avoid clashing with central "dashboard"
+    // Path /dashboard remains, which is fine.
+    Route::get('/dashboard', DashboardController::class)->name('tenant.dashboard');
 
     // campaigns
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('tenant.campaigns.index');
@@ -56,4 +63,3 @@ Route::middleware([
     Route::get('/credits', [CreditController::class, 'index'])->name('tenant.credits.index');
     Route::post('/credits/settings', [CreditController::class, 'updateSettings'])->name('tenant.credits.settings');
 });
-

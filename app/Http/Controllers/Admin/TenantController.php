@@ -4,18 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class TenantController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', Tenant::class);
 
         $tenants = Tenant::query()
             ->with('domains:id,tenant_id,domain')
-            ->when($request->filled('status'), fn($q) => $q->where('status', $request->string('status')))
-            ->when($request->boolean('only_trashed'), fn($q) => $q->onlyTrashed())
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->boolean('only_trashed'), fn ($q) => $q->onlyTrashed())
             ->orderByDesc('created_at')
             ->paginate(20)
             ->withQueryString();
@@ -30,7 +33,7 @@ class TenantController extends Controller
         $tenant->load('domains:id,tenant_id,domain');
         $subscriptions = $tenant->subscriptions()->get();
 
-        return view('admin.tenants.show', compact('tenant','subscriptions'));
+        return view('admin.tenants.show', compact('tenant', 'subscriptions'));
     }
 
     public function suspend(Tenant $tenant)

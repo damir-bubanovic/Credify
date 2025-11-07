@@ -82,7 +82,10 @@
     <tbody>
     @forelse($ledger as $row)
         @php
-            $sign = $row->type === 'spend' ? '-' : '+';
+            $delta  = (int) $row->delta;
+            $type   = $delta < 0 ? 'spend' : 'earn';
+            $sign   = $delta < 0 ? '-' : '+';
+            $amount = abs($delta);
         @endphp
         <tr>
             <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
@@ -92,11 +95,11 @@
             </td>
             <td style="padding:.25rem .5rem;border-bottom:1px solid #f1f5f9;">
                 <span style="font-size:.8rem;padding:.15rem .4rem;border:1px solid #e5e7eb;border-radius:.25rem;background:#f8fafc;">
-                    {{ $row->type }}
+                    {{ $type }}
                 </span>
             </td>
             <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;text-align:right;">
-                {{ $sign }}{{ number_format((int) $row->amount) }}
+                {{ $sign }}{{ number_format($amount) }}
             </td>
             <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
                 {{ $row->reason ?? '—' }}

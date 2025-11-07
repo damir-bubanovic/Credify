@@ -45,12 +45,11 @@ class CreditService
                 $after = (int) $bal->balance;
 
                 CreditLedger::create([
-                    'tenant_id'      => $tid,
-                    'delta'          => $amount,
-                    'balance_before' => $before,
-                    'balance_after'  => $after,
-                    'reason'         => $reason,
-                    'meta'           => $meta,
+                    'tenant_id'     => $tid,
+                    'delta'         => $amount,
+                    'balance_after' => $after,
+                    'reason'        => $reason,
+                    'meta'          => $meta,
                 ]);
             });
         });
@@ -81,12 +80,11 @@ class CreditService
                 $after = (int) $bal->balance;
 
                 CreditLedger::create([
-                    'tenant_id'      => $tid,
-                    'delta'          => -$amount,
-                    'balance_before' => $before,
-                    'balance_after'  => $after,
-                    'reason'         => $reason,
-                    'meta'           => $meta,
+                    'tenant_id'     => $tid,
+                    'delta'         => -$amount,
+                    'balance_after' => $after,
+                    'reason'        => $reason,
+                    'meta'          => $meta,
                 ]);
 
                 return true;

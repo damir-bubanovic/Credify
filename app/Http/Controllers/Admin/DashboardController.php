@@ -12,27 +12,28 @@ class DashboardController extends Controller
     {
         $cards = [
             'tenants'     => Tenant::count(),
-            // Consider "active" + "trialing" as subscribed. Adjust to your needs.
+            // Cashier uses "stripe_status"
             'subscribed'  => DB::table('subscriptions')
-                                ->where('name', 'default')
-                                ->whereIn('status', ['active', 'trialing'])
-                                ->distinct('user_id')
-                                ->count('user_id'),
-            'mrr_eur'     => 0, // fill from Stripe later
+                ->where('name', 'default')
+                ->whereIn('stripe_status', ['active', 'trialing'])
+                ->distinct('user_id')
+                ->count('user_id'),
+            'mrr_eur'     => 0, // fill from Stripe later if needed
             'credits_sum' => (int) Tenant::sum('credit_balance'),
         ];
 
         $recent = Tenant::with('domains:id,tenant_id,domain')
             ->latest()
             ->take(10)
-            ->get(['id','created_at','credit_balance','plan']);
+            ->get(['id', 'created_at', 'credit_balance', 'plan']);
 
-        $ledger = DB::table('credit_transactions')
-            ->select('tenant_id','type','amount','reason','created_at')
+        // Use credit_ledgers, which CreditService writes to
+        $ledger = DB::table('credit_ledgers')
+            ->select('tenant_id', 'delta', 'balance_after', 'reason', 'created_at')
             ->orderByDesc('created_at')
             ->limit(20)
             ->get();
 
-        return view('admin.dashboard', compact('cards','recent','ledger'));
+        return view('admin.dashboard', compact('cards', 'recent', 'ledger'));
     }
 }
