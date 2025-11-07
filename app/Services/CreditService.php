@@ -38,14 +38,19 @@ class CreditService
                     ]
                 );
 
-                $bal->balance += $amount;
+                $before = (int) $bal->balance;
+                $bal->balance = $before + $amount;
                 $bal->save();
 
+                $after = (int) $bal->balance;
+
                 CreditLedger::create([
-                    'tenant_id' => $tid,
-                    'delta'     => $amount,
-                    'reason'    => $reason,
-                    'meta'      => $meta,
+                    'tenant_id'      => $tid,
+                    'delta'          => $amount,
+                    'balance_before' => $before,
+                    'balance_after'  => $after,
+                    'reason'         => $reason,
+                    'meta'           => $meta,
                 ]);
             });
         });
@@ -69,14 +74,19 @@ class CreditService
                     return false;
                 }
 
-                $bal->balance -= $amount;
+                $before = (int) $bal->balance;
+                $bal->balance = $before - $amount;
                 $bal->save();
 
+                $after = (int) $bal->balance;
+
                 CreditLedger::create([
-                    'tenant_id' => $tid,
-                    'delta'     => -$amount,
-                    'reason'    => $reason,
-                    'meta'      => $meta,
+                    'tenant_id'      => $tid,
+                    'delta'          => -$amount,
+                    'balance_before' => $before,
+                    'balance_after'  => $after,
+                    'reason'         => $reason,
+                    'meta'           => $meta,
                 ]);
 
                 return true;

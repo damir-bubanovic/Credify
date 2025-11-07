@@ -33,8 +33,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('credit_transactions');
-            Schema::table('tenants', function (Blueprint $table) {
-            $table->dropColumn('credit_balance');
-        });
     }
 };

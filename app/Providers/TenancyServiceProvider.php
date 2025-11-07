@@ -12,6 +12,8 @@ use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use Stancl\Tenancy\Contracts\Tenant as TenantContract;
+use Stancl\Tenancy\Events\TenancyBootstrapped;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -103,6 +105,13 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+
+        Event::listen(TenancyBootstrapped::class, function (TenancyBootstrapped $event) {
+            $tenant = $event->tenancy->tenant; // Stancl tenant instance
+            if (data_get($tenant, 'status') === 'suspended') {
+                abort(423, 'Tenant suspended');
+            }
+        });
     }
 
     protected function bootEvents()
