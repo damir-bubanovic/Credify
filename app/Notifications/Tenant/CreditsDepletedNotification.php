@@ -7,17 +7,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LowCreditsNotification extends Notification implements ShouldQueue
+class CreditsDepletedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public int $balance;
-    public int $threshold;
-
-    public function __construct(int $balance, int $threshold)
-    {
-        $this->balance = $balance;
-        $this->threshold = $threshold;
+    public function __construct(
+        public int $balance
+    ) {
     }
 
     public function via(object $notifiable): array
@@ -32,18 +28,16 @@ class LowCreditsNotification extends Notification implements ShouldQueue
             : 'your tenant';
 
         return (new MailMessage)
-            ->subject("Low credits warning for {$tenantName}")
+            ->subject("Credits depleted for {$tenantName}")
             ->line("Your current credit balance is {$this->balance}.")
-            ->line("Your low-credit threshold is {$this->threshold}.")
-            ->line('Some features may stop working when credits are fully depleted.')
-            ->line('Please top up your credits or update your subscription plan.');
+            ->line('Credit-based features are now disabled because your credits are fully depleted.')
+            ->line('Please top up your credits or upgrade your subscription plan to resume normal usage.');
     }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'balance'   => $this->balance,
-            'threshold' => $this->threshold,
+            'balance' => $this->balance,
         ];
     }
 }
