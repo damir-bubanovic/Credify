@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tenant id and domain
+    |--------------------------------------------------------------------------
+    |
+    */
+    'dev_tenant_id'     => env('DEV_TENANT_ID', 'acme'),
+    'dev_tenant_domain' => env('DEV_TENANT_DOMAIN', 'acme.credify.test'),
+
+
+
 ];

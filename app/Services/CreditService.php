@@ -47,7 +47,7 @@ class CreditService
                 CreditLedger::create([
                     'tenant_id'     => $tid,
                     'delta'         => $amount,
-                    'balance_after' => $after,
+                    'balance_after' => $after,   // ensure this is set
                     'reason'        => $reason,
                     'meta'          => $meta,
                 ]);
@@ -82,7 +82,7 @@ class CreditService
                 CreditLedger::create([
                     'tenant_id'     => $tid,
                     'delta'         => -$amount,
-                    'balance_after' => $after,
+                    'balance_after' => $after,  // ensure this is set
                     'reason'        => $reason,
                     'meta'          => $meta,
                 ]);

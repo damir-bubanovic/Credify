@@ -5,21 +5,20 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class AdminUserSeeder extends Seeder
+class DemoUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Only run in central context. If a tenant is active, skip.
         if (function_exists('tenant') && tenant()) {
             return;
         }
 
         User::updateOrCreate(
-            ['email' => 'admin@credify.localhost'],
+            ['email' => 'user@credify.localhost'],
             [
-                'name'              => 'Admin',
+                'name'              => 'Demo User',
                 'password'          => bcrypt('password'),
-                'role'              => 'admin',
+                'role'              => 'user',
                 'email_verified_at' => now(),
             ]
         );

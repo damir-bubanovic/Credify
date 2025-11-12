@@ -11,16 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('credit_balances', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('tenant_id')->index();
+        Schema::connection('mysql')->create('credit_balances', function (Blueprint $table) {
+            // tenant_id is string, not UUID — consistent with Tenant::id = "acme"
+            $table->string('tenant_id')->primary();
+
             $table->bigInteger('balance')->default(0);
             $table->bigInteger('low_threshold')->default(100);
+
+            // Optional top-up automation fields
             $table->boolean('auto_topup_enabled')->default(false);
-            $table->bigInteger('topup_amount')->default(0);
+            $table->bigInteger('topup_amount')->default(0)->nullable();
             $table->string('stripe_price_id')->nullable();
+
             $table->timestamps();
-            $table->unique('tenant_id');
+
+            $table->index('tenant_id'); // harmless with primary but keeps consistency
         });
     }
 
@@ -29,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('credit_balances');
+        Schema::connection('mysql')->dropIfExists('credit_balances');
     }
 };

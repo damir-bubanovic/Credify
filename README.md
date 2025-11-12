@@ -56,14 +56,16 @@
 - Admin ability to suspend or delete tenants added.
 - Metrics and analytics dashboard created.
 
+### 10. **Email & Notifications**
+- Tenant-specific email branding added.
+- Notification system for billing, credits, and campaign events added.
+
+
 ---
 
 ## 🚧 Chapters / Features Still To Be Done
 
 
-### 10. **Email & Notifications**
-- Tenant-specific email branding.
-- Notification system for billing, credits, and campaign events.
 
 ### 11. **API & Webhook Integration**
 - Tenant-specific API keys.

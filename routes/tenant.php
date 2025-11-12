@@ -1,15 +1,18 @@
 <?php
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Tenant\ApiKeyController;
 use App\Http\Controllers\Tenant\BillingController as TB;
-use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\CreditController;
+use App\Http\Controllers\Tenant\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
+|--------------------------------------------------------------------------
 | Tenant routes
+|--------------------------------------------------------------------------
 | Public (whoami, billing) + Protected (app)
 */
 
@@ -26,18 +29,9 @@ Route::middleware([
     Route::get('/billing/success', [TB::class, 'success'])->name('tenant.billing.success');
     Route::post('/billing/checkout/{price}', [TB::class, 'checkout'])->name('tenant.billing.checkout');
     Route::get('/billing/portal', [TB::class, 'portal'])->name('tenant.billing.portal');
-
-    // IMPORTANT:
-    // Do NOT include central auth routes here.
-    // They define /login, /register, etc. and would override central /login
-    // and then PreventAccessFromCentralDomains would 404 on credify.localhost.
-    //
-    // So this stays commented:
-    //
-    // require base_path('routes/auth.php');
 });
 
-# Protected tenant routes (require tenant tenancy + auth)
+# Protected tenant APP routes (require tenancy + auth + subscription)
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -46,11 +40,10 @@ Route::middleware([
     'verified',
     'tenant.subscribed', // tenant-level subscription check
 ])->group(function () {
-    // Use a distinct route NAME to avoid clashing with central "dashboard"
-    // Path /dashboard remains, which is fine.
+    // Tenant dashboard
     Route::get('/dashboard', DashboardController::class)->name('tenant.dashboard');
 
-    // campaigns
+    // Campaigns
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('tenant.campaigns.index');
     Route::get('/campaigns/create', [CampaignController::class, 'create'])->name('tenant.campaigns.create');
     Route::post('/campaigns', [CampaignController::class, 'store'])->name('tenant.campaigns.store');
@@ -59,7 +52,20 @@ Route::middleware([
     Route::put('/campaigns/{campaign}', [CampaignController::class, 'update'])->name('tenant.campaigns.update');
     Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('tenant.campaigns.destroy');
 
-    // credits
+    // Credits
     Route::get('/credits', [CreditController::class, 'index'])->name('tenant.credits.index');
     Route::post('/credits/settings', [CreditController::class, 'updateSettings'])->name('tenant.credits.settings');
+});
+
+
+# Tenant API key management (admin only on tenant domain)
+Route::middleware([
+    'web',
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+    'role:admin',
+])->group(function () {
+    Route::get('/api-keys', [ApiKeyController::class, 'index'])->name('tenant.api-keys.index');
+    Route::post('/api-keys', [ApiKeyController::class, 'store'])->name('tenant.api-keys.store');
+    Route::delete('/api-keys/{apiKey}', [ApiKeyController::class, 'destroy'])->name('tenant.api-keys.destroy');
 });

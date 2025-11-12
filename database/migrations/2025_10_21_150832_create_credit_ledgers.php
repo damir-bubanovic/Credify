@@ -11,16 +11,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('credit_ledgers', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('tenant_id')->index();
-            $table->bigInteger('delta'); // + add, - deduct
-            $table->bigInteger('balance_after');
-            $table->string('reason')->index();
+        Schema::connection('mysql')->create('credit_ledgers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+
+            // match tenant_id type to credit_balances (string)
+            $table->string('tenant_id')->index();
+
+            // +credits or -credits, always recorded
+            $table->bigInteger('delta');
+            $table->bigInteger('balance_after'); // required for accurate history
+
+            // reason for the transaction
+            $table->string('reason')->nullable()->index();
+
+            // idempotency: prevent duplicate inserts
             $table->string('idempotency_key')->nullable()->unique();
-            $table->morphs('caused_by'); // model that caused change
+
+            // user or system actor
+            $table->string('caused_by_type')->nullable();
+            $table->unsignedBigInteger('caused_by_id')->nullable();
+
+            // additional data
             $table->json('meta')->nullable();
+
             $table->timestamps();
+
+            // optional indexing for analytics
+            $table->index(['tenant_id', 'created_at']);
         });
     }
 
@@ -29,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('credit_ledgers');
+        Schema::connection('mysql')->dropIfExists('credit_ledgers');
     }
 };

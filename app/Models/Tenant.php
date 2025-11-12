@@ -10,6 +10,7 @@ use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
+use App\Models\TenantApiKey;
 
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
@@ -69,4 +70,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
         return $data['owner_email'] ?? $data['email'] ?? null;
     }
+
+
+    public function apiKeys()
+    {
+        return $this->hasMany(TenantApiKey::class, 'tenant_id');
+    }
+
 }
