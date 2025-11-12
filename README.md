@@ -61,15 +61,14 @@
 - Notification system for billing, credits, and campaign events added.
 
 
+### 11. **API & Webhook Integration**
+- Tenant-specific API keys done.
+- Webhooks for campaign tracking, credit usage, and subscription status created.
+
 ---
 
 ## 🚧 Chapters / Features Still To Be Done
 
-
-
-### 11. **API & Webhook Integration**
-- Tenant-specific API keys.
-- Webhooks for campaign tracking, credit usage, and subscription status.
 
 ### 12. **UI / UX Finalization**
 - Vue or React frontend integration (via Vite).
