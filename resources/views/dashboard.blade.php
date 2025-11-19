@@ -12,6 +12,9 @@
                     {{ __("You're logged in!") }}
                 </div>
             </div>
+
+            {{-- Vue mount point --}}
+            <div id="tenant-onboarding-app"></div>
         </div>
     </div>
 </x-app-layout>

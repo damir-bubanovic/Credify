@@ -12,6 +12,11 @@ use Laravel\Cashier\Http\Controllers\WebhookController;
 
 Route::get('/', fn () => view('welcome'));
 
+Route::get('/vue-test', function () {
+    return view('dashboard');
+})->middleware(['auth']);
+
+
 // Central "home" used by Breeze /login redirect: route('dashboard')
 Route::get('/admin/home', function () {
     return redirect()->route('admin.dashboard');
