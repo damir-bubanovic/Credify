@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 use App\Services\CreditService;
+use App\Http\Controllers\CampaignTrackingWebhookController;
 
 Route::middleware([
     'api',
@@ -13,6 +14,8 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     'tenant.api-key',
 ])->group(function () {
+
+    // Credit-usage webhook (already existing)
     Route::post('/v1/run', function (Request $request, CreditService $credits) {
         // capture the tenant while tenancy is initialized
         $tenant = tenant();
@@ -36,4 +39,8 @@ Route::middleware([
 
         return response()->json(['ok' => true, 'tenant' => (string) $tenant->id]);
     });
+
+    // Campaign tracking webhook
+    Route::post('/v1/campaigns/{campaign}/events', CampaignTrackingWebhookController::class)
+        ->name('api.campaigns.events');
 });

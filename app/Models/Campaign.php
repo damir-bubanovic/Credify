@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Campaign extends Model
 {
-    protected $fillable = ['name','status','spend','meta'];
-    protected $casts = ['meta' => 'array'];
+    protected $fillable = [
+        'name',
+        'status',
+        'spend',
+        'meta',
+        'impressions',
+        'clicks',
+        'conversions',
+    ];
+
+    protected $casts = [
+        'meta' => 'array',
+    ];
 }

@@ -63,7 +63,7 @@
 
 ### 11. **API & Webhook Integration**
 - Tenant-specific API keys done.
-- Webhooks for campaign tracking, credit usage, and subscription status created.
+- Webhooks for campaign tracking, credit usage, and subscription status to be created.
 
 ---
 

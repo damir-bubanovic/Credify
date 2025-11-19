@@ -14,8 +14,14 @@ return new class extends Migration
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('status', ['draft','active','paused'])->default('draft');
-            $table->unsignedInteger('spend')->default(0);
+            $table->string('status')->default('draft');
+
+            // tracking fields
+            $table->unsignedBigInteger('impressions')->default(0);
+            $table->unsignedBigInteger('clicks')->default(0);
+            $table->unsignedBigInteger('conversions')->default(0);
+
+            $table->unsignedBigInteger('spend')->default(0);
             $table->json('meta')->nullable();
             $table->timestamps();
         });

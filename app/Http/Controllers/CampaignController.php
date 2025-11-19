@@ -16,7 +16,7 @@ class CampaignController extends Controller
     public function index()
     {
         return view('tenant.campaigns.index', [
-            'campaigns' => Campaign::latest()->paginate(10)
+            'campaigns' => Campaign::latest()->paginate(10),
         ]);
     }
 
@@ -40,12 +40,11 @@ class CampaignController extends Controller
             'path' => $request->path(),
         ];
 
-        // spend credits in central context
-        $ok = tenancy()->central(function () use ($credits, $cost, $meta, $idempotencyKey) {
-            // Prefer spend signature: spend(Tenant $tenant, int $amount, string $reason, array $meta = [], ?string $idempotencyKey = null)
-            // If your CreditService lacks $meta/$idempotencyKey, add them. For now we pass them.
-            return $credits->spend(tenant(), $cost, 'campaign.create', $meta, $idempotencyKey);
-        });
+        // current tenant (this is valid in tenant context)
+        $tenant = tenant();
+
+        // spend credits in central DB, but using the proper tenant model
+        $ok = $credits->spend($tenant, $cost, 'campaign.create', $meta, $idempotencyKey);
 
         if (! $ok) {
             return back()
@@ -53,6 +52,7 @@ class CampaignController extends Controller
                 ->withInput();
         }
 
+        // create the campaign in the tenant database
         $campaign = Campaign::create($request->validated());
 
         return redirect()
