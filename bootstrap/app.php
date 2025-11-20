@@ -15,7 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'              => \App\Http\Middleware\RoleMiddleware::class,
             'tenant.subscribed' => \App\Http\Middleware\EnsureTenantIsSubscribed::class,
-            'tenant.api-key'    => \App\Http\Middleware\EnsureValidTenantApiKey::class, // <— add
+            'tenant.api-key'    => \App\Http\Middleware\EnsureValidTenantApiKey::class,
+            'tenant.onboarded' => \App\Http\Middleware\EnsureTenantOnboarded::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

@@ -5,6 +5,7 @@ use App\Http\Controllers\Tenant\ApiKeyController;
 use App\Http\Controllers\Tenant\BillingController as TB;
 use App\Http\Controllers\Tenant\CreditController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\OnboardingController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -31,7 +32,7 @@ Route::middleware([
     Route::get('/billing/portal', [TB::class, 'portal'])->name('tenant.billing.portal');
 });
 
-# Protected tenant APP routes (require tenancy + auth + subscription)
+# Protected tenant APP routes (require tenancy + auth + subscription + onboarding)
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -39,9 +40,18 @@ Route::middleware([
     'auth',
     'verified',
     'tenant.subscribed', // tenant-level subscription check
+    'tenant.onboarded',  // must have completed onboarding
 ])->group(function () {
     // Tenant dashboard
     Route::get('/dashboard', DashboardController::class)->name('tenant.dashboard');
+
+    // Onboarding (Vue wizard)
+    Route::get('/onboarding', [OnboardingController::class, 'show'])
+        ->name('tenant.onboarding');
+    Route::post('/onboarding/business', [OnboardingController::class, 'saveBusiness'])
+        ->name('tenant.onboarding.business');
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])
+        ->name('tenant.onboarding.complete');
 
     // Campaigns
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('tenant.campaigns.index');
@@ -56,7 +66,6 @@ Route::middleware([
     Route::get('/credits', [CreditController::class, 'index'])->name('tenant.credits.index');
     Route::post('/credits/settings', [CreditController::class, 'updateSettings'])->name('tenant.credits.settings');
 });
-
 
 # Tenant API key management (admin only on tenant domain)
 Route::middleware([
