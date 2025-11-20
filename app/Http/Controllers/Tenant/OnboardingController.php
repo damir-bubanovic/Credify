@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tenant;
 use Illuminate\Http\Request;
 
 class OnboardingController extends Controller
 {
     public function show()
     {
-        // Just render the Vue onboarding view
         return view('tenant.onboarding');
     }
 
@@ -24,22 +22,32 @@ class OnboardingController extends Controller
             'contact_email'  => ['nullable', 'email', 'max:255'],
         ]);
 
-        $tenantId = (string) tenant('id');
+        $tenant = tenant();
 
-        tenancy()->central(function () use ($tenantId, $data) {
-            $tenant = Tenant::findOrFail($tenantId);
+        if (! $tenant) {
+            abort(500, 'Tenant not found.');
+        }
 
-            $payload = $tenant->data ?? [];
+        // Load existing data as array (handles both JSON string and casted array)
+        $payload = $tenant->data ?? [];
 
-            $payload['business_name'] = $data['business_name'];
-            $payload['website_url']   = $data['website_url'] ?? null;
-            $payload['industry']      = $data['industry'] ?? null;
-            $payload['contact_name']  = $data['contact_name'] ?? null;
-            $payload['contact_email'] = $data['contact_email'] ?? null;
+        if (is_string($payload)) {
+            $decoded = json_decode($payload, true);
+            $payload = is_array($decoded) ? $decoded : [];
+        } elseif (! is_array($payload)) {
+            $payload = [];
+        }
 
-            $tenant->data = $payload;
-            $tenant->save();
-        });
+        // Merge new fields
+        $payload['business_name'] = $data['business_name'];
+        $payload['website_url']   = $data['website_url'] ?? null;
+        $payload['industry']      = $data['industry'] ?? null;
+        $payload['contact_name']  = $data['contact_name'] ?? null;
+        $payload['contact_email'] = $data['contact_email'] ?? null;
+
+        // Save back into data JSON
+        $tenant->data = $payload;
+        $tenant->save();
 
         return response()->json([
             'status'  => 'ok',
@@ -49,17 +57,15 @@ class OnboardingController extends Controller
 
     public function complete()
     {
-        $tenantId = (string) tenant('id');
+        $tenant = tenant();
 
-        tenancy()->central(function () use ($tenantId) {
-            $tenant = Tenant::findOrFail($tenantId);
+        if (! $tenant) {
+            abort(500, 'Tenant not found.');
+        }
 
-            $payload = $tenant->data ?? [];
-            $payload['onboarding_completed_at'] = now();
-
-            $tenant->data = $payload;
-            $tenant->save();
-        });
+        // Use dedicated column for onboarding completion
+        $tenant->onboarding_completed_at = now();
+        $tenant->save();
 
         return response()->json([
             'status'   => 'ok',

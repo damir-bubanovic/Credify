@@ -18,6 +18,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $casts = [
         'trial_ends_at'  => 'datetime',
+        'onboarding_completed_at' => 'datetime',
         'data'           => 'array',
         'credit_balance' => 'integer',
     ];

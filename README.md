@@ -65,15 +65,15 @@
 - Tenant-specific API keys done.
 - Webhooks for campaign tracking, credit usage, and subscription status created.
 
+### 12. **UI / UX Finalization**
+- Vue or React frontend integration (via Vite) done.
+- Tenant onboarding screens done.
+- Better tenant admin UI and billing portal styling done.
+
 ---
 
 ## 🚧 Chapters / Features Still To Be Done
 
-
-### 12. **UI / UX Finalization**
-- Vue or React frontend integration (via Vite).
-- Tenant onboarding screens.
-- Better tenant admin UI and billing portal styling.
 
 ### 13. **Production Hardening**
 - HTTPS configuration for multitenant domains.
