@@ -1,118 +1,219 @@
 {{-- resources/views/admin/dashboard.blade.php --}}
-<h1 class="mb-2">Admin Dashboard</h1>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="text-xl font-semibold leading-tight text-gray-800">
+            {{ __('Admin dashboard') }}
+        </h2>
+    </x-slot>
 
-@if(session('status'))
-    <div style="padding:.5rem 1rem;border:1px solid #cbd5e1;background:#f1f5f9;margin-bottom:1rem;">
-        {{ session('status') }}
+    <div class="py-8">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+
+            {{-- Status message --}}
+            @if(session('status'))
+                <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            {{-- Summary cards --}}
+            <div class="grid gap-6 md:grid-cols-3 mb-8">
+                <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <div class="text-sm font-medium text-gray-500">
+                        {{ __('Total tenants') }}
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $cards['tenants'] }}
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <div class="text-sm font-medium text-gray-500">
+                        {{ __('Subscribed tenants') }}
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $cards['subscribed'] }}
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <div class="text-sm font-medium text-gray-500">
+                        {{ __('Total credits across tenants') }}
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ number_format((int) $cards['credits_sum']) }}
+                    </div>
+                </div>
+            </div>
+
+            {{-- Recent tenants --}}
+            <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+                <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            {{ __('Recent tenants') }}
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            {{ __('Latest tenants created, with primary domain, plan, and credit balance.') }}
+                        </p>
+                    </div>
+
+                    <a
+                        href="{{ route('admin.tenants.index') }}"
+                        class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                    >
+                        {{ __('View all tenants →') }}
+                    </a>
+                </div>
+
+                <div class="px-6 py-4">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('ID') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Primary domain') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Created') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Plan') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-right font-medium text-gray-500">
+                                        {{ __('Credits') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 bg-white">
+                                @forelse($recent as $t)
+                                    @php
+                                        $domain = optional($t->domains->first())->domain;
+                                    @endphp
+                                    <tr>
+                                        <td class="px-4 py-3 text-gray-900">
+                                            {{ $t->id }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @if ($domain)
+                                                <a
+                                                    href="http://{{ $domain }}"
+                                                    target="_blank"
+                                                    class="text-indigo-600 hover:text-indigo-500"
+                                                >
+                                                    {{ $domain }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-400">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-500">
+                                            {{ $t->created_at }}
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-700">
+                                            {{ $t->plan ?? '—' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-gray-900">
+                                            {{ number_format((int) $t->credit_balance) }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500">
+                                            {{ __('No tenants yet.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Latest credit transactions --}}
+            <div class="mt-8 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+                <div class="border-b border-gray-100 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        {{ __('Latest credit transactions') }}
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ __('Recent changes to tenant credit balances.') }}
+                    </p>
+                </div>
+
+                <div class="px-6 py-4">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Tenant') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Type') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-right font-medium text-gray-500">
+                                        {{ __('Amount') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('Reason') }}
+                                    </th>
+                                    <th class="px-4 py-2 text-left font-medium text-gray-500">
+                                        {{ __('At') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 bg-white">
+                                @forelse($ledger as $row)
+                                    @php
+                                        $delta  = (int) $row->delta;
+                                        $amount = abs($delta);
+                                        $sign   = $delta >= 0 ? '+' : '-';
+                                        $type   = $delta >= 0 ? __('Credit') : __('Debit');
+                                    @endphp
+                                    <tr>
+                                        <td class="px-4 py-3 text-gray-900">
+                                            {{ $row->tenant_id }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium
+                                                @if ($delta >= 0)
+                                                    border-green-200 bg-green-50 text-green-700
+                                                @else
+                                                    border-red-200 bg-red-50 text-red-700
+                                                @endif
+                                            ">
+                                                {{ $type }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right font-semibold
+                                            @if ($delta >= 0) text-green-700 @else text-red-700 @endif
+                                        ">
+                                            {{ $sign }}{{ number_format($amount) }}
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-700">
+                                            {{ $row->reason ?? '—' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-500">
+                                            {{ $row->created_at }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500">
+                                            {{ __('No transactions found.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-@endif
-
-<ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;padding:0;list-style:none;margin:0 0 1rem 0;">
-    <li style="border:1px solid #e5e7eb;border-radius:.5rem;padding:.75rem;">
-        <div style="font-size:.85rem;color:#6b7280;">Total tenants</div>
-        <div style="font-weight:600;font-size:1.25rem;">{{ $cards['tenants'] }}</div>
-    </li>
-    <li style="border:1px solid #e5e7eb;border-radius:.5rem;padding:.75rem;">
-        <div style="font-size:.85rem;color:#6b7280;">Subscribed</div>
-        <div style="font-weight:600;font-size:1.25rem;">{{ $cards['subscribed'] }}</div>
-    </li>
-    <li style="border:1px solid #e5e7eb;border-radius:.5rem;padding:.75rem;">
-        <div style="font-size:.85rem;color:#6b7280;">Total credits</div>
-        <div style="font-weight:600;font-size:1.25rem;">{{ number_format((int) $cards['credits_sum']) }}</div>
-    </li>
-</ul>
-
-<h3 class="mt-4 mb-2">Recent tenants</h3>
-<div style="overflow:auto;">
-<table style="width:100%;border-collapse:collapse;">
-    <thead>
-        <tr>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">ID</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Primary domain</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Created</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Plan</th>
-            <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:.5rem;">Credits</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse($recent as $t)
-        @php
-            $domain = optional($t->domains->first())->domain;
-        @endphp
-        <tr>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                <a href="{{ route('admin.tenants.show', $t->id) }}" style="color:#2563eb;text-decoration:none;">
-                    {{ $t->id }}
-                </a>
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                {{ $domain ?: '—' }}
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                {{ $t->created_at }}
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                {{ $t->plan ?? '—' }}
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;text-align:right;">
-                {{ number_format((int) $t->credit_balance) }}
-            </td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="5" style="padding:.75rem;text-align:center;color:#6b7280;">No tenants yet.</td>
-        </tr>
-    @endforelse
-    </tbody>
-</table>
-</div>
-
-<h3 class="mt-6 mb-2">Latest credit transactions</h3>
-<div style="overflow:auto;">
-<table style="width:100%;border-collapse:collapse;">
-    <thead>
-        <tr>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Tenant</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Type</th>
-            <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:.5rem;">Amount</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">Reason</th>
-            <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:.5rem;">At</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse($ledger as $row)
-        @php
-            $delta  = (int) $row->delta;
-            $type   = $delta < 0 ? 'spend' : 'earn';
-            $sign   = $delta < 0 ? '-' : '+';
-            $amount = abs($delta);
-        @endphp
-        <tr>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                <a href="{{ route('admin.tenants.show', $row->tenant_id) }}" style="color:#2563eb;text-decoration:none;">
-                    {{ $row->tenant_id }}
-                </a>
-            </td>
-            <td style="padding:.25rem .5rem;border-bottom:1px solid #f1f5f9;">
-                <span style="font-size:.8rem;padding:.15rem .4rem;border:1px solid #e5e7eb;border-radius:.25rem;background:#f8fafc;">
-                    {{ $type }}
-                </span>
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;text-align:right;">
-                {{ $sign }}{{ number_format($amount) }}
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                {{ $row->reason ?? '—' }}
-            </td>
-            <td style="padding:.5rem;border-bottom:1px solid #f1f5f9;">
-                {{ $row->created_at }}
-            </td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="5" style="padding:.75rem;text-align:center;color:#6b7280;">No transactions found.</td>
-        </tr>
-    @endforelse
-    </tbody>
-</table>
-</div>
+</x-app-layout>
