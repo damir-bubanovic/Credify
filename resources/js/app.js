@@ -5,6 +5,7 @@ import { createApp } from 'vue';
 
 import OnboardingApp from './components/OnboardingApp.vue';
 import OnboardingWizard from './components/OnboardingWizard.vue';
+import CampaignsApp from './components/CampaignsApp.vue';
 
 // Alpine initialization
 window.Alpine = Alpine;
@@ -25,4 +26,17 @@ if (mountEl) {
     if (type === 'wizard') {
         createApp(OnboardingWizard).mount(mountEl);
     }
+}
+
+// Campaigns index page mount
+const campaignsEl = document.getElementById('campaigns-app');
+
+if (campaignsEl) {
+    const campaigns = JSON.parse(campaignsEl.dataset.campaigns || '[]');
+    const createUrl = campaignsEl.dataset.createUrl;
+
+    createApp(CampaignsApp, {
+        campaigns,
+        createUrl,
+    }).mount(campaignsEl);
 }
