@@ -23,14 +23,14 @@ class BillingController extends Controller
         };
 
         return $tenant->newSubscription('default', $priceId)->checkout([
-            'success_url' => route('billing.show') . '?success=1',
-            'cancel_url'  => route('billing.show') . '?canceled=1',
+            'success_url' => route('admin.billing.show') . '?success=1',
+            'cancel_url'  => route('admin.billing.show') . '?canceled=1',
         ]);
     }
 
     public function portal(Request $request)
     {
         $tenant = Tenant::first();
-        return $tenant->redirectToBillingPortal(route('billing.show'));
+        return $tenant->redirectToBillingPortal(route('admin.billing.show'));
     }
 }

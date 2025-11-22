@@ -17,7 +17,7 @@
             @endif
 
             {{-- Summary cards --}}
-            <div class="grid gap-6 md:grid-cols-3 mb-8">
+            <div class="mb-8 grid gap-6 md:grid-cols-3">
                 <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <div class="text-sm font-medium text-gray-500">
                         {{ __('Total tenants') }}
@@ -48,7 +48,7 @@
 
             {{-- Recent tenants --}}
             <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
-                <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">
                             {{ __('Recent tenants') }}
@@ -95,7 +95,12 @@
                                     @endphp
                                     <tr>
                                         <td class="px-4 py-3 text-gray-900">
-                                            {{ $t->id }}
+                                            <a
+                                                href="{{ route('admin.tenants.show', $t) }}"
+                                                class="font-medium text-indigo-600 hover:text-indigo-500"
+                                            >
+                                                {{ $t->id }}
+                                            </a>
                                         </td>
                                         <td class="px-4 py-3">
                                             @if ($domain)
