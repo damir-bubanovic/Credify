@@ -1,76 +1,198 @@
+<p align="center">
+  <img src="public/images/screenshot.png" alt="Credify screenshot" width="800">
+</p>
+
+# Credify
+
+------------------------------------------------------------------------
+
+**Credify** is a multitenant SaaS platform built with Laravel, Vue.js,
+Tailwind, and Docker.\
+It enables organizations to create, manage, verify, and distribute
+digital credentials in a fully isolated tenant environment.
+
+------------------------------------------------------------------------
+
+## Core Features
+
 # Credify Multitenant SaaS Progress Report
 
-## ✅ Completed Chapters / Features
+## ✅ Completed Chapters (in order)
 
-### 1. **Environment and Project Setup**
-- Laravel + Sail + MySQL + Redis + Mailpit configured.
-- Local domains (`credify.localhost`, `acme.credify.localhost`) working.
-- `.env` fully aligned for tenancy and Stripe.
-- DBeaver integration confirmed for DB inspection.
+### Chapter 1: System Setup
 
-### 2. **Multitenancy Core (Stancl/Tenancy)**
-- Tenancy correctly initialized by domain.
-- Tenant creation automated via `tenant:create {id} {domain}` artisan command.
-- Tenant migrations stored in `database/migrations/tenant`.
-- Automatic database creation, migration, and seeding on new tenant creation.
-- Working tenant route isolation (`http://acme.credify.localhost`).
-- Middleware priority configured in `TenancyServiceProvider`.
+-   Laravel project initialized.
+-   Tailwind, Vue, Vite installed and tested.
+-   Docker infrastructure working (Nginx, PHP-FPM, MySQL).
+-   Multi-environment setup complete.
+-   Local domain routing confirmed.
 
-### 3. **Authentication and Tenant Isolation**
-- Tenant-level registration and login functional.
-- Central admin user seeded (`admin@credify.localhost`).
-- Tenant user registration creates and stores users in isolated tenant DBs.
-- Verified tenant dashboard redirection after login.
+### Chapter 2: Authentication
 
-### 4. **Admin Panel (Central Domain)**
-- Central `/admin` dashboard with role middleware (`role:admin`).
-- Admin can view/manage global aspects of the platform.
-- Stripe billing portal and checkout accessible for central users.
+-   Laravel Breeze installed with Vue stack.
+-   Auth pages themed (login, register, forgot password).
+-   Role system scaffolding added.
 
-### 5. **Tenant Dashboard and Campaign Management**
-- Tenant dashboard (`/dashboard`) functional and isolated per tenant.
-- Campaign CRUD routes and controllers configured:
-  - Create / Edit / View / Delete / List campaigns.
-- Tenant credit balance fetched from central DB.
+### Chapter 3: Tenant Management
 
-### 6. **Tenant Provisioning Command**
-- `tenant:create` command automates:
-  - Tenant DB creation and migration.
-  - Domain mapping.
-  - Initial credit allocation.
+-   Fully working multi-tenant architecture.
+-   Automatic tenant creation on company registration.
+-   Middleware ensures tenant isolation.
+-   Tenant-specific domains working.
+-   Tenant creation UI polished.
 
-### 7. **Billing and Subscription (Stripe + Cashier)**
-- Stripe test keys integrated.
-- Central billing routes (`/billing`, `/billing/portal`, `/billing/checkout/{price}`).
-- Tenant billing support configured.
-- Cashier configured to use `Tenant` model.
-- Subscription and credit tracking tables functional.
+### Chapter 4: Company Profile
 
-### 8. **Tenant Credit System Automation**
-- Implemented automatic credit deduction per campaign or API usage.
-- Added credit transaction history per tenant.
-- Low-credit alerts and auto top-up functionality.
+-   Each tenant gets a company profile.
+-   Fully editable profile settings.
+-   File uploads stored per-tenant.
+-   UI polished.
 
-### 9. **Advanced Admin Management**
-- Central admin dashboard to list tenants, domains, and billing status created.
-- Admin ability to suspend or delete tenants added.
-- Metrics and analytics dashboard created.
+### Chapter 5: Members
 
-### 10. **Email & Notifications**
-- Tenant-specific email branding added.
-- Notification system for billing, credits, and campaign events added.
+-   Members CRUD completed.
+-   Member roles functional.
+-   Invitation system built.
+-   Profiles editable.
+-   Search/filter features added.
 
+### Chapter 6: Credentials System (Core of Credify)
 
-### 11. **API & Webhook Integration**
-- Tenant-specific API keys done.
-- Webhooks for campaign tracking, credit usage, and subscription status created.
+-   Credential types implemented.
+-   Template builder for certificates/cards.
+-   Credential creation flow done.
+-   Credential assignment to members done.
+-   Credential validity periods working.
+-   Credential preview UI added.
+-   Credential sharing link working.
 
-### 12. **UI / UX Finalization**
-- Vue or React frontend integration (via Vite) done.
-- Tenant onboarding screens done.
-- Better tenant admin UI and billing portal styling done.
+### Chapter 7: Notifications
 
-### 13. **Production Hardening**
-- Queue and cache optimization for multi-database setup done.
-- Backups and monitoring done.
+-   Database notifications.
+-   Email notifications fully working.
+-   Credit depletion notification.
+-   Credential expiration reminders.
+-   Admin dashboard notification center.
 
+### Chapter 8: Credits System
+
+-   Credits tracked per tenant.
+-   Credit usage rules implemented.
+-   Low-credit warnings and notifications.
+-   UI badges showing credits.
+-   Purchase credits flow prepared.
+
+### Chapter 9: Dashboard
+
+-   Multi-widget dashboard for each tenant.
+-   Stats on members, credentials, expirations.
+-   Quick actions and overview charts.
+
+### Chapter 10: API
+
+-   Sanctum API generation functional.
+-   Token management UI added.
+-   API endpoints protected per tenant.
+-   Documentation stub created.
+
+### Chapter 11: Billing (In progress)
+
+-   Stripe integration scaffolding.
+-   Subscription system started.
+-   Webhooks & events prepared.
+
+### Chapter 12: Advanced Tenant Configuration
+
+-   Per-tenant theme override structure done.
+-   Custom logo, colors, branding applied.
+-   Audit log basics added.
+
+### Chapter 13: Admin Panel
+
+-   Global platform admin panel structure.
+-   Super-admin roles and permissions.
+-   Admin user management.
+
+### Chapter 14: Infrastructure
+
+-   Docker production preview done.
+-   Supervisor + queue workers set.
+-   Optimized builds.
+-   Caching and config optimization.
+-   Multi-database setup done.
+-   Backups and monitoring done.
+
+------------------------------------------------------------------------
+
+## Tech Stack
+
+-   Laravel 10+
+-   Vue.js 3 (with Composition API)
+-   Tailwind CSS
+-   Docker (Nginx, PHP-FPM, MySQL)
+-   Vite
+-   Sanctum API Authentication
+-   Stripe Billing (in progress)
+
+------------------------------------------------------------------------
+
+## Installation
+
+### Clone & Setup
+
+``` bash
+git clone https://github.com/damir-bubanovic/Credify.git
+cd Credify
+cp .env.example .env
+composer install
+npm install
+php artisan key:generate
+```
+
+### Run Migrations
+
+``` bash
+php artisan migrate --seed
+php artisan storage:link
+```
+
+### Start Development
+
+Using Docker:
+
+``` bash
+docker-compose up -d
+```
+
+Local PHP server:
+
+``` bash
+php artisan serve
+npm run dev
+```
+
+------------------------------------------------------------------------
+
+## Deployment
+
+``` bash
+php artisan optimize
+npm run build
+```
+
+Set `.env`:
+
+    APP_ENV=production
+    APP_DEBUG=false
+
+Ensure queues, scheduler, and workers are configured.
+
+------------------------------------------------------------------------
+
+## Creator
+
+**Damir Bubanović**
+
+-   https://damirbubanovic.com
+-   GitHub: https://github.com/damir-bubanovic
+-   YouTube: https://www.youtube.com/@damirbubanovic6608
