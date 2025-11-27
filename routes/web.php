@@ -6,16 +6,34 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
-
-
 Route::get('/', fn () => view('welcome'));
+
+/**
+ * Application health check (central + one tenant DB).
+ * Returns: {"status":"ok"} with HTTP 200 on success,
+ *          {"status":"error"} with HTTP 500 on failure.
+ */
+Route::get('/health', function () {
+    try {
+        $exitCode = Artisan::call('health:check');
+
+        return response()->json([
+            'status' => $exitCode === 0 ? 'ok' : 'error',
+        ], $exitCode === 0 ? 200 : 500);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
 
 Route::get('/vue-test', function () {
     return view('dashboard');
 })->middleware(['auth']);
-
 
 // Central "home" used by Breeze /login redirect: route('dashboard')
 Route::get('/admin/home', function () {
@@ -32,7 +50,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin area (central only)
-Route::middleware(['auth', 'role:admin'])   // <- just these two now
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -56,7 +74,6 @@ require __DIR__ . '/auth.php';
 
 if (app()->environment('local')) {
     Route::get('/__dev/recreate/{id}/{domain}', function (string $id, string $domain) {
-        // ... keep your recreate closure exactly as before ...
         try {
             if ($t = \App\Models\Tenant::find($id)) {
                 $db = $t->database()->getName();

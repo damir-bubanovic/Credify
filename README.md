@@ -70,18 +70,7 @@
 - Tenant onboarding screens done.
 - Better tenant admin UI and billing portal styling done.
 
----
-
-## 🚧 Chapters / Features Still To Be Done
-
-
 ### 13. **Production Hardening**
-- HTTPS configuration for multitenant domains.
-- Queue and cache optimization for multi-database setup.
-- Backups and monitoring.
+- Queue and cache optimization for multi-database setup done.
+- Backups and monitoring done.
 
----
-
-## 🔄 Next Recommended Chapter
-**Next:** “Tenant Credit System Automation”  
-Goal: ensure campaign usage affects tenant credits and introduce a transaction history table.
